@@ -1,8 +1,5 @@
 package com.royal.app.message.request;
 
-import lombok.Data;
-
-@Data
 public class SendMessage {
   private String apikey;
   private String id;

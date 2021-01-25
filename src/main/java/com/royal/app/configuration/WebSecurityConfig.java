@@ -1,6 +1,8 @@
 package com.royal.app.configuration;
 
-import org.codehaus.jackson.map.ObjectMapper;
+import org.alicebot.ab.Bot;
+import org.alicebot.ab.Chat;
+import org.alicebot.ab.MagicBooleans;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +21,7 @@ import org.springframework.web.client.RestTemplate;
 import com.royal.app.jwt.JwtAuthEntryPoint;
 import com.royal.app.jwt.JwtAuthTokenFilter;
 import com.royal.app.services.impl.UserDetailsServiceImpl;
+import com.royal.app.util.ResourcesLocation;
 
 
 @Configuration
@@ -27,6 +30,9 @@ import com.royal.app.services.impl.UserDetailsServiceImpl;
     prePostEnabled = true
 )
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+  
+  private static final boolean TRACE_MODE = false;
+  static String botName = "Bot";
     
     private UserDetailsServiceImpl userDetailsService;
     
@@ -35,6 +41,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         RestTemplate restTemplate = new RestTemplate();
         return restTemplate;
     }
+    
+    @Bean
+    public Chat chat() {
+      ResourcesLocation resource = new ResourcesLocation();
+      String resourcesPath = resource.getResourcesPath();
+      MagicBooleans.trace_mode = TRACE_MODE;
+      Bot bot = new Bot("super", resourcesPath);
+      //bot.writeAIMLFiles(); // Read any new aiml files everytime
+      Chat chatSession = new Chat(bot);
+      bot.brain.nodeStats();
+      return chatSession;
+  }
     
     @Autowired
     public void setUserDetailsService(UserDetailsServiceImpl userDetailsService) {

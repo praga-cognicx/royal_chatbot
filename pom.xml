@@ -140,21 +140,13 @@
         <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
     <dependency>
-        <groupId>org.apache.httpcomponents</groupId>
-        <artifactId>httpclient</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>org.projectlombok</groupId>
-        <artifactId>lombok</artifactId>
-        <optional>true</optional>
-    </dependency>
-		<dependency>
-			<groupId>org.codehaus.jackson</groupId>
-			<artifactId>jackson-mapper-asl</artifactId>
-			<version>1.9.4</version>
-		</dependency>
-	</dependencies>
-
+			<artifactId>com.google</artifactId>
+			<groupId>Ab</groupId>
+			<version>0.0.4.3</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/lib/Ab.jar</systemPath>
+	</dependency>
+</dependencies>
 	<build>
 		<plugins>
 			<plugin>
