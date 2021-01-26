@@ -1,14 +1,23 @@
 package com.royal.app.chatengine;
 
+import java.lang.reflect.Field;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
 import org.alicebot.ab.Chat;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
+import org.springframework.web.client.RestTemplate;
+import com.royal.app.message.request.SendMessage;
 
 @Configuration
 public class ChatEngine implements SchedulingConfigurer {
@@ -19,6 +28,9 @@ public class ChatEngine implements SchedulingConfigurer {
   
   @Autowired
   Chat chatSession;
+  
+  @Autowired
+  RestTemplate restTemplate;
   
   
   /**
@@ -63,7 +75,40 @@ public class ChatEngine implements SchedulingConfigurer {
        /**Chat Scheduler */
        scheduledTaskRegistrar.addCronTask(() -> {
            try {
-             System.out.println("Chat Engine Running..."+ chatSession.multisentenceRespond("Hi"));
+             System.out.println("Chat Engine Running...");
+             String apiKey = "ea1114db7440b2f77b4b0062a8bf7234_41832_0c146e5811c0dc04a990955d5";
+             String url ="https://rest.messengerpeople.com/api/v14/ticket?apikey="+apiKey+"&num_chats=1&customfields=1&last_chat=1&notes=0&status=1&newsletter=1&order=waiting_since&asc=1&offset=0&limit=150";
+             ResponseEntity<String> entity = restTemplate.getForEntity(url, String.class);
+            if(200 == entity.getStatusCodeValue()) {
+              JSONObject json = new JSONObject(entity.getBody());
+              JSONArray ticketList = json.getJSONArray("tickets");
+              for(int i=0; i < ticketList.length(); i++) {
+                JSONObject ticketObject = ticketList.getJSONObject(i);
+                JSONArray chatList = ticketObject.getJSONArray("chats");
+                for(int cIndex=0; cIndex < chatList.length(); cIndex++) {
+                  JSONObject chatObject = chatList.getJSONObject(cIndex);
+                if(!(boolean) chatObject.get("outgoing")) {
+                  new Thread(() -> {
+                    //Do whatever
+                    SendMessage sendMessage = new SendMessage();
+                    sendMessage.setApikey(apiKey);
+                    try {
+                      sendMessage.setMessage(chatSession.multisentenceRespond((String) chatObject.get("chat")));
+                      sendMessage.setId(ticketObject.getString("user_id"));
+                      String sendRes = restTemplate.postForObject("https://rest.messengerpeople.com/api/v14/chat", sendMessage, String.class);
+                      System.out.println("Chat sent::"+sendRes);
+                    } catch (JSONException e) {
+                      // TODO Auto-generated catch block
+                      e.printStackTrace();
+                    }
+                   
+                  }).start();
+                }       
+                }
+                
+              }             
+            }
+           
              
            } catch (Exception e1) {
              e1.printStackTrace();
@@ -76,11 +121,5 @@ public class ChatEngine implements SchedulingConfigurer {
      }
    }
  
-   public static void main(String []q) {
-     
-     ChatEngine ce = new ChatEngine();
-     ce.configureTasks(new ScheduledTaskRegistrar());
-   }
-
  
 }
