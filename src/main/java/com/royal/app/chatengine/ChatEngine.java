@@ -18,6 +18,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.web.client.RestTemplate;
 import com.royal.app.message.request.SendMessage;
+import com.royal.app.services.ChatDemoService;
 
 @Configuration
 public class ChatEngine implements SchedulingConfigurer {
@@ -31,6 +32,9 @@ public class ChatEngine implements SchedulingConfigurer {
   
   @Autowired
   RestTemplate restTemplate;
+  
+  @Autowired
+  ChatDemoService chatDemoService;
   
   
   /**
@@ -93,11 +97,14 @@ public class ChatEngine implements SchedulingConfigurer {
                     SendMessage sendMessage = new SendMessage();
                     sendMessage.setApikey(apiKey);
                     try {
-                      sendMessage.setMessage(chatSession.multisentenceRespond((String) chatObject.get("chat")));
+                      sendMessage.setMessage(chatMessage((String) chatObject.get("chat")));
                       sendMessage.setId(ticketObject.getString("user_id"));
                       String sendRes = restTemplate.postForObject("https://rest.messengerpeople.com/api/v14/chat", sendMessage, String.class);
                       System.out.println("Chat sent::"+sendRes);
                     } catch (JSONException e) {
+                      // TODO Auto-generated catch block
+                      e.printStackTrace();
+                    } catch (Exception e) {
                       // TODO Auto-generated catch block
                       e.printStackTrace();
                     }
@@ -119,6 +126,37 @@ public class ChatEngine implements SchedulingConfigurer {
      logger
        .error("ChatEngine Application Exception:: Scheduling Not Started/DB not connected. Method:configureTasks()", e);
      }
+   }
+   
+   
+   public String chatMessage(String request) throws Exception {
+     String response = "";
+     if("Hi".equalsIgnoreCase(request)) {
+       response = "Welcome to BOT Service. How can i help?";
+     } else if("Balance".equalsIgnoreCase(request)) {
+       response = "Please give me your customer ID: Format(B-XXXX)";
+     } else if("Usage".equalsIgnoreCase(request)) {
+       response = "Please give me your customer ID: Format(U-XXXX)";
+     } else if(request.contains("B-")) {
+       response = chatDemoService.getKeyValuePair("Balance", request.split("-")[1]); 
+       if(!response.isEmpty()) {
+         response = "Your Balance is RS " +response;
+       } else {
+         response = "Balance not available. Please enter valid customer ID: Format(U-XXXX)";
+       }
+     } else if(request.contains("U-")) {
+       response = chatDemoService.getKeyValuePair("Usage", request.split("-")[1]); 
+       if(!response.isEmpty()) {
+         response = "Your Usgae is RS " +response;
+       } else {
+         response = "Usage not available. Please enter valid customer ID: Format(U-XXXX)";
+       }
+     } else {
+       response = chatSession.multisentenceRespond(request);
+     }
+     
+    return response;
+     
    }
  
  
