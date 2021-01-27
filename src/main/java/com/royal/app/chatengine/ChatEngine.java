@@ -132,10 +132,10 @@ public class ChatEngine implements SchedulingConfigurer {
    public String chatMessage(String request) throws Exception {
      String response = "";
      if("Hi".equalsIgnoreCase(request)) {
-       response = "Welcome to BOT Service. How can i help?";
-     } else if("Balance".equalsIgnoreCase(request)) {
+       response = "Welcome to BOT Service. How can i help?\n\n*1.* Account Balance *\u20b9*\n*2.* Account Usage *\u20b9*\n*3.* Account Statement \n*4.* Exit \n\nPlease type the *option number* to proceed";
+     } else if("Balance".equalsIgnoreCase(request)||"1".equalsIgnoreCase(request)) {
        response = "Please give me your customer ID: Format(B-XXXX)";
-     } else if("Usage".equalsIgnoreCase(request)) {
+     } else if("Usage".equalsIgnoreCase(request)||"2".equalsIgnoreCase(request)) {
        response = "Please give me your customer ID: Format(U-XXXX)";
      } else if(request.contains("B-")) {
        response = chatDemoService.getKeyValuePair("Balance", request.split("-")[1]); 
@@ -151,6 +151,8 @@ public class ChatEngine implements SchedulingConfigurer {
        } else {
          response = "Usage not available. Please enter valid customer ID: Format(U-XXXX)";
        }
+     } else if ("3".equalsIgnoreCase(request)) {
+       response = "Your statement will get you in email soon!!!";
      } else {
        response = chatSession.multisentenceRespond(request);
      }
