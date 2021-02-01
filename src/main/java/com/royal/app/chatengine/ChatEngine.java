@@ -17,6 +17,7 @@ import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.web.client.RestTemplate;
+import com.royal.app.message.request.AgentAssign;
 import com.royal.app.message.request.SendMessage;
 import com.royal.app.services.ChatDemoService;
 
@@ -94,12 +95,25 @@ public class ChatEngine implements SchedulingConfigurer {
                 if(!(boolean) chatObject.get("outgoing")) {
                   new Thread(() -> {
                     //Do whatever
+                    String sendRes = "";
                     SendMessage sendMessage = new SendMessage();
                     sendMessage.setApikey(apiKey);
                     try {
-                      sendMessage.setMessage(chatMessage((String) chatObject.get("chat")));
-                      sendMessage.setId(ticketObject.getString("user_id"));
-                      String sendRes = restTemplate.postForObject("https://rest.messengerpeople.com/api/v14/chat", sendMessage, String.class);
+                      if("C-".equalsIgnoreCase((String) chatObject.get("chat"))) {
+
+                        AgentAssign agentAssign = new AgentAssign();
+                        agentAssign.setApikey(apiKey);
+                        agentAssign.setAgent_id("91729");
+                        String [] batchIds = {ticketObject.getString("id")};
+                        agentAssign.setBatch_ids(batchIds);
+                        restTemplate.put("https://rest.messengerpeople.com/api/v14/ticket", agentAssign);
+                      } else {
+                        sendMessage.setMessage(chatMessage((String) chatObject.get("chat")));
+                        sendMessage.setId(ticketObject.getString("user_id"));
+                        sendRes = restTemplate.postForObject("https://rest.messengerpeople.com/api/v14/chat", sendMessage, String.class);
+                        
+                      }
+                      
                       System.out.println("Chat sent::"+sendRes);
                     } catch (JSONException e) {
                       // TODO Auto-generated catch block
@@ -153,7 +167,9 @@ public class ChatEngine implements SchedulingConfigurer {
        }
      } else if ("3".equalsIgnoreCase(request)) {
        response = "Your statement will get you in email soon!!!";
-     } else {
+     } else if("Agent assistance".contains(request) || "assistance".contains(request)){
+       response = "Please give me your customer ID: Format(C-XXXX)";
+     } else {   
        response = chatSession.multisentenceRespond(request);
      }
      
