@@ -146,7 +146,7 @@ public class ChatEngine implements SchedulingConfigurer {
    public String chatMessage(String request) throws Exception {
      String response = "";
      if("Hi".equalsIgnoreCase(request) || request.contains("TID")) {
-       response = "Welcome to BOT Service. How can i help?\n\n*1.* Account Balance *\u20b9*\n*2.* Account Usage *\u20b9*\n*3.* Account Statement \n*4.* Exit \n\nPlease type the *option number* to proceed";
+       response = "Welcome to BOT Service. How can i help?\n\n*1.* Account Balance *\u20b9*\n*2.* Account Usage *\u20b9*\n*3.* Agent assistance \n*4.* Exit \n\nPlease type the *option number* to proceed";
      } else if("Balance".equalsIgnoreCase(request)||"1".equalsIgnoreCase(request)) {
        response = "Please give me your customer ID: Format(B-XXXX)";
      } else if("Usage".equalsIgnoreCase(request)||"2".equalsIgnoreCase(request)) {
@@ -167,8 +167,10 @@ public class ChatEngine implements SchedulingConfigurer {
        }
      } else if ("3".equalsIgnoreCase(request)) {
        response = "Your statement will get you in email soon!!!";
-     } else if("Agent assistance".contains(request) || "assistance".contains(request)){
+     } else if("Agent assistance".contains(request) || "assistance".contains(request) || "3".equalsIgnoreCase(request)){
        response = "Please give me your customer ID: Format(C-XXXX)";
+     } else if("Exit".contains(request) || "4".equalsIgnoreCase(request)){
+       response = "Thank You!!!";
      } else {   
        response = chatSession.multisentenceRespond(request);
      }
