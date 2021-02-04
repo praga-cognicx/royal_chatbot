@@ -1,4 +1,4 @@
-package com.royal.app.controller;
+/*package com.royal.app.controller;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -35,11 +35,11 @@ public class RateSheetController {
       
       rateSheetService.generateSingleRateSheetWithOutMail(rsId);
       
-     /* RateSheetDto rateSheetDto =
+      RateSheetDto rateSheetDto =
           new RateSheetDto();
-      BeanUtils.copyProperties(rateSheetRequest, rateSheetDto);*/
+      BeanUtils.copyProperties(rateSheetRequest, rateSheetDto);
    //   rateSheetService.getReteSheetExcel(rateSheetDto);
- /*     if (reportMonthSelectionRequestDto != null
+      if (reportMonthSelectionRequestDto != null
           && reportMonthSelectionRequestDto.getResultObj() != null
           && reportMonthSelectionRequestDto.getResultObj() != "") {
         gr.setStatus(StatusCodeConstants.SUCCESS);
@@ -56,7 +56,7 @@ public class RateSheetController {
         gr.setMessage("Data Not Found.");
         gr.setValue(null);
       }
-*/
+
       gr.setStatus(StatusCodeConstants.SUCCESS);
       gr.setError(StatusCodeConstants.SUCCESS_STR);
       gr.setMessage("Success");
@@ -91,3 +91,4 @@ public class RateSheetController {
 
   }
 }
+*/

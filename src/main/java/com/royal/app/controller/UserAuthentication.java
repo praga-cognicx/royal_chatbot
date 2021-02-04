@@ -1,4 +1,4 @@
-package com.royal.app.controller;
+/*package com.royal.app.controller;
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -114,7 +114,7 @@ public class UserAuthentication {
         tokenDetailsDto.setCreatedBy("System");
         userService.saveTokenDetails(tokenDetailsDto);
 
-   /*     int otpNumber = otpService.generateOTP(userPrinciple.getEmployeeId());
+        int otpNumber = otpService.generateOTP(userPrinciple.getEmployeeId());
         String mailBody = "Dear "+userPrinciple.getFirstName()+" "+userPrinciple.getLastName()+","
                 +"\n"+"Your login otp is "+otpNumber;
                 emailService.sendSimpleMessage(userPrinciple.getEmail(), "Royal User Login OTP::"+userPrinciple.getEmployeeId(), mailBody);
@@ -123,7 +123,7 @@ public class UserAuthentication {
         genericResponse.setMessage(
                 "OTP sent to registered Email Id. Please enter valid OTP to verify.");
         genericResponse.setError(StatusCodeConstants.SUCCESS_STR);
-        */
+        
         genericResponse.setStatus(StatusCodeConstants.SUCCESS);
         genericResponse.setError(StatusCodeConstants.SUCCESS_STR);
         genericResponse.setMessage("Logged in Successfully");
@@ -217,7 +217,7 @@ public class UserAuthentication {
   }
 
 
-/*   @PostMapping("/token/authenticate")
+   @PostMapping("/token/authenticate")
 	public ResponseEntity<GenericResponse> tokenAuthenticate(
 			@Valid @RequestBody AuthenticateRequest authenticateRequest, HttpServletResponse response)
 			throws Exception {
@@ -389,5 +389,6 @@ public class UserAuthentication {
 			logger.error("Exception::UserAuthentication.Class:resetPassword()", e);
 		}
 		return ResponseEntity.ok(new GenericResponse(genericResponse));
-	}*/
+	}
 }
+*/

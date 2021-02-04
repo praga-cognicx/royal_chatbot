@@ -1,4 +1,4 @@
-package com.royal.app.controller;
+/*package com.royal.app.controller;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -185,11 +185,11 @@ public class FileController {
       workbook.write(outputStream);
     //  workbook.close();
       
-    /*  byte[] resource = null;
+      byte[] resource = null;
       ByteArrayOutputStream out = new ByteArrayOutputStream();
       workbook.write(out);
       resource = out.toByteArray();
-      fileContent = Base64.getEncoder().encodeToString(resource);*/
+      fileContent = Base64.getEncoder().encodeToString(resource);
     } catch (Exception e) {
       logger.error("Error ::FileUploadUtil  :: generateXLSFile :: ", e);
     } finally {
@@ -334,3 +334,4 @@ public class FileController {
   }
 
 }
+*/

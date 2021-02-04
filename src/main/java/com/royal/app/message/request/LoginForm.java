@@ -12,7 +12,6 @@ public class LoginForm {
     @Size(min = 6, max = 40)
     private String password;
     
-    private String apikey;
  
     public String getUsername() {
         return username;
@@ -30,12 +29,4 @@ public class LoginForm {
         this.password = password;
     }
 
-    public String getApikey() {
-      return apikey;
-    }
-
-    public void setApikey(String apikey) {
-      this.apikey = apikey;
-    }
-    
-}
+ }

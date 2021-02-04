@@ -91,7 +91,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable().
                 authorizeRequests()
-                .antMatchers("/chatbot/**",/*"/ratesheet/update/mappedhoteldropdown",,"/ratesheet/updatetype/dropdown", "/ratesheet/update/updateRatesheetUpdates","/ratesheet/update/saveRatesheetUpdates","/ratesheet/mgt/priority/list","/ratesheet/mgt/priority/update","/ratesheet/mgt/view","/ratesheet/Maps/create","/ratesheet/maps/list","/ratesheet/maps/dropdowns","/ratesheet/agentdropdown", "/ratesheet/maps/list","/ratesheet/mgt/update","/ratesheet/mgt/list", "/file/ratesheet/uploadFile","/ratesheet/getRateSheetDet", "/ratesheet/mgt/create","/api/token/authenticate",*/"/ratesheet/getRateSheetDetNew","/ratesheet/getRateSheetDet","/file/ratesheet/uploadFile","/api/login","/api/logout","/api/forgetpassword/request","/api/forgetpassword/reset",/*"/api/login/validateOTP"*/"/v2/api-docs", "/configuration/**","/swagger*/**","/webjars/**").permitAll().anyRequest().anonymous()
+                .antMatchers("/api/chat/**","/api/ticket/**","/api/login","/api/logout","/api/forgetpassword/request","/api/forgetpassword/reset",/*"/api/login/validateOTP"*/"/v2/api-docs", "/configuration/**","/swagger*/**","/webjars/**").permitAll().anyRequest().anonymous()
                 .antMatchers("/api/auth**").permitAll()
                 .anyRequest().authenticated()
                 .and()

@@ -1,9 +1,6 @@
 package com.royal.app.chatengine;
 
-import java.lang.reflect.Field;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
 import org.alicebot.ab.Chat;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -19,6 +16,7 @@ import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.web.client.RestTemplate;
 import com.royal.app.message.request.AgentAssign;
 import com.royal.app.message.request.SendMessage;
+import com.royal.app.messagerpeople.MessagerPeopleAPISetting;
 import com.royal.app.services.ChatDemoService;
 
 @Configuration
@@ -36,6 +34,9 @@ public class ChatEngine implements SchedulingConfigurer {
   
   @Autowired
   ChatDemoService chatDemoService;
+  
+  @Autowired
+  MessagerPeopleAPISetting messagerPeopleAPISetting;
   
   
   /**
@@ -81,8 +82,7 @@ public class ChatEngine implements SchedulingConfigurer {
        scheduledTaskRegistrar.addCronTask(() -> {
            try {
              System.out.println("Chat Engine Running...");
-             String apiKey = "ea1114db7440b2f77b4b0062a8bf7234_41832_0c146e5811c0dc04a990955d5";
-             String url ="https://rest.messengerpeople.com/api/v14/ticket?apikey="+apiKey+"&num_chats=1&customfields=1&last_chat=1&notes=0&status=1&newsletter=1&order=waiting_since&asc=1&offset=0&limit=150";
+             String url = messagerPeopleAPISetting.getMessagengerPeopleUrl()+"/ticket?apikey="+messagerPeopleAPISetting.getMessagengerPeopleApikey()+"&num_chats=1&customfields=1&last_chat=1&notes=0&status=1&newsletter=1&order=waiting_since&asc=1&offset=0&limit=150";
              ResponseEntity<String> entity = restTemplate.getForEntity(url, String.class);
             if(200 == entity.getStatusCodeValue()) {
               JSONObject json = new JSONObject(entity.getBody());
@@ -97,20 +97,20 @@ public class ChatEngine implements SchedulingConfigurer {
                     //Do whatever
                     String sendRes = "";
                     SendMessage sendMessage = new SendMessage();
-                    sendMessage.setApikey(apiKey);
+                    sendMessage.setApikey(messagerPeopleAPISetting.getMessagengerPeopleApikey());
                     try {
                       if("C-".equalsIgnoreCase((String) chatObject.get("chat"))) {
 
                         AgentAssign agentAssign = new AgentAssign();
-                        agentAssign.setApikey(apiKey);
+                        agentAssign.setApikey(messagerPeopleAPISetting.getMessagengerPeopleApikey());
                         agentAssign.setAgent_id("91729");
                         String [] batchIds = {ticketObject.getString("id")};
                         agentAssign.setBatch_ids(batchIds);
-                        restTemplate.put("https://rest.messengerpeople.com/api/v14/ticket", agentAssign);
+                        restTemplate.put(messagerPeopleAPISetting.getMessagengerPeopleUrl()+"/ticket", agentAssign);
                       } else {
                         sendMessage.setMessage(chatMessage((String) chatObject.get("chat")));
                         sendMessage.setId(ticketObject.getString("user_id"));
-                        sendRes = restTemplate.postForObject("https://rest.messengerpeople.com/api/v14/chat", sendMessage, String.class);
+                        sendRes = restTemplate.postForObject(messagerPeopleAPISetting.getMessagengerPeopleUrl()+"/chat", sendMessage, String.class);
                         
                       }
                       
@@ -145,7 +145,7 @@ public class ChatEngine implements SchedulingConfigurer {
    
    public String chatMessage(String request) throws Exception {
      String response = "";
-     if("Hi".equalsIgnoreCase(request)) {
+     if("Hi".equalsIgnoreCase(request) || request.contains("TID")) {
        response = "Welcome to BOT Service. How can i help?\n\n*1.* Account Balance *\u20b9*\n*2.* Account Usage *\u20b9*\n*3.* Account Statement \n*4.* Exit \n\nPlease type the *option number* to proceed";
      } else if("Balance".equalsIgnoreCase(request)||"1".equalsIgnoreCase(request)) {
        response = "Please give me your customer ID: Format(B-XXXX)";

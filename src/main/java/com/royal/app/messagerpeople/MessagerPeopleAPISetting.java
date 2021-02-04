@@ -2,11 +2,35 @@ package com.royal.app.messagerpeople;
 
 import java.util.Map;
 import org.apache.commons.collections4.map.HashedMap;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+@Component
 public class MessagerPeopleAPISetting {
   
+  @Value("${chat.app.messagengerPeopleApikey}")
+  private String messagengerPeopleApikey;
+  
+  @Value("${chat.app.messagengerPeopleUrl}")
+  private String messagengerPeopleUrl;
+  
+  @Value("${chat.app.version}")
+  private String version;
   
   
+  public String getMessagengerPeopleApikey() {
+    return messagengerPeopleApikey;
+  }
+
+
+  public String getMessagengerPeopleUrl() {
+    return messagengerPeopleUrl;
+  }
+
+  public String getVersion() {
+    return version;
+  }
+
   public String getURL(String urlName) {
     Map<String, String> urls = new HashedMap<>();
     
@@ -60,7 +84,7 @@ public class MessagerPeopleAPISetting {
     urls.put("STATISTICS_CUSTOM_GET", "/statistics/custom");
     urls.put("STATISTICS_AGENTS_GET", "/statistics/agents");
     
-    return urls.get(urlName);
+    return getMessagengerPeopleUrl() + urls.get(urlName);
     
   }
 

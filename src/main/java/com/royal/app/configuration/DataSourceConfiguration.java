@@ -3,9 +3,7 @@ package com.royal.app.configuration;
 
 
 import java.util.Properties;
-
 import javax.sql.DataSource;
-
 import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +22,6 @@ import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import com.royal.app.constants.AppicationConstants;
-import com.royal.app.dao.impl.RateSheetDAOImpl;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
