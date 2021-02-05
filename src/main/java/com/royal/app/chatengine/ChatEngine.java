@@ -1,6 +1,10 @@
 package com.royal.app.chatengine;
 
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.servlet.http.HttpSession;
 import org.alicebot.ab.Chat;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -38,6 +42,8 @@ public class ChatEngine implements SchedulingConfigurer {
   @Autowired
   MessagerPeopleAPISetting messagerPeopleAPISetting;
   
+  @Autowired
+  ChatSessionMgt chatSessionMgt;
   
   /**
   * 
@@ -90,8 +96,19 @@ public class ChatEngine implements SchedulingConfigurer {
               for(int i=0; i < ticketList.length(); i++) {
                 JSONObject ticketObject = ticketList.getJSONObject(i);
                 JSONArray chatList = ticketObject.getJSONArray("chats");
+                /*Map<String, Map<String,Object>> chatSessions = new HashMap<String, Map<String,Object>>();
+                Map<String,Object> chatsList = new HashMap<String,Object>();
+                chatsList.put("chat", chatList);
+                chatSessions.put(ticketObject.getString("id"), chatsList);
+                chatSessionMgt.setChatSessions(chatSessions);*/
+                
                 for(int cIndex=0; cIndex < chatList.length(); cIndex++) {
                   JSONObject chatObject = chatList.getJSONObject(cIndex);
+                  Map<String, String> agentAssistance = chatSessionMgt.getAgentAssistance();
+                  if(agentAssistance != null && !agentAssistance.isEmpty() && "Agent assistance".contains(chatObject.getString("chat").toString()) || chatObject.getString("chat").toString().contains("assistance") || chatObject.getString("chat").toString().contains("3")) {
+                    agentAssistance.put(ticketObject.getString("user_id"), "true");
+                    chatSessionMgt.setAgentAssistance(agentAssistance);
+                  }
                 if(!(boolean) chatObject.get("outgoing")) {
                   new Thread(() -> {
                     //Do whatever
@@ -99,19 +116,48 @@ public class ChatEngine implements SchedulingConfigurer {
                     SendMessage sendMessage = new SendMessage();
                     sendMessage.setApikey(messagerPeopleAPISetting.getMessagengerPeopleApikey());
                     try {
-                      if("C-".equalsIgnoreCase((String) chatObject.get("chat"))) {
-
-                        AgentAssign agentAssign = new AgentAssign();
-                        agentAssign.setApikey(messagerPeopleAPISetting.getMessagengerPeopleApikey());
-                        agentAssign.setAgent_id("91729");
-                        String [] batchIds = {ticketObject.getString("id")};
-                        agentAssign.setBatch_ids(batchIds);
-                        restTemplate.put(messagerPeopleAPISetting.getMessagengerPeopleUrl()+"/ticket", agentAssign);
-                      } else {
-                        sendMessage.setMessage(chatMessage((String) chatObject.get("chat")));
-                        sendMessage.setId(ticketObject.getString("user_id"));
-                        sendRes = restTemplate.postForObject(messagerPeopleAPISetting.getMessagengerPeopleUrl()+"/chat", sendMessage, String.class);
+                      if(chatObject.get("chat").toString().contains("C-")) {
+                        ResponseEntity<String> agentEntity = restTemplate.getForEntity(messagerPeopleAPISetting.getMessagengerPeopleUrl()+"//agent?open_tickets=1&apikey="+messagerPeopleAPISetting.getMessagengerPeopleApikey(), String.class);
+                        if(200 == agentEntity.getStatusCodeValue()) {
+                          JSONObject agentJson = new JSONObject(agentEntity.getBody());
+                          JSONArray agents = agentJson.getJSONObject("agents").names();
+                          for(int agentIndex=0; agentIndex < agents.length(); agentIndex++) {
+                            JSONObject agentObject = agentJson.getJSONObject("agents").getJSONObject((String) agents.get(agentIndex));
+                            if("1".equalsIgnoreCase(agentObject.getString("active")) 
+                                && agentObject.getString("roles").contains("chatAgent")) {
+                              JSONArray channelId = agentObject.getJSONArray("channels");
+                              JSONArray agentTicketObject =  agentObject.getJSONObject("tickets").getJSONObject(channelId.getString(0)).names();   
+                              
+                              for(int agentTIndex=0; agentTIndex < agentTicketObject.length(); agentTIndex++) {
+                                if(ticketObject.getString("id").equalsIgnoreCase(agentTicketObject.get(agentTIndex).toString())){
+                                AgentAssign agentAssign = new AgentAssign();
+                                agentAssign.setApikey(messagerPeopleAPISetting.getMessagengerPeopleApikey());
+                                agentAssign.setAgent_id(agentObject.getString("id"));
+                                String [] batchIds = {ticketObject.getString("id")};
+                                agentAssign.setBatch_ids(batchIds);
+                                restTemplate.put(messagerPeopleAPISetting.getMessagengerPeopleUrl()+"/ticket", agentAssign);
+                                }
+                                }
+                            }
+                          
+                          }
+                        }
                         
+                        
+                      } else {
+                        String res = chatMessage((String) chatObject.get("chat"), ticketObject.getString("user_id"));
+                        if(!"NO".equals(res)) {
+                        sendMessage.setMessage(chatMessage((String) chatObject.get("chat"), ticketObject.getString("user_id")));
+                        sendMessage.setId(ticketObject.getString("user_id"));
+                        try {
+                        ResponseEntity<String>  sendChatResult = restTemplate.postForEntity(messagerPeopleAPISetting.getMessagengerPeopleUrl()+"/chat", sendMessage, String.class);
+                        if(412 == sendChatResult.getStatusCodeValue()) {
+                          sendRes = sendChatResult.getBody();
+                        }
+                        }catch(Exception ex) {
+                          System.out.println("Exception ChatEngine Chat Send::"+ex);
+                        }
+                        }
                       }
                       
                       System.out.println("Chat sent::"+sendRes);
@@ -135,7 +181,7 @@ public class ChatEngine implements SchedulingConfigurer {
              e1.printStackTrace();
            }
          
-       }, "0/10 * * * * ?");
+       }, "0/3 * * * * ?");
      } catch (Exception e) {
      logger
        .error("ChatEngine Application Exception:: Scheduling Not Started/DB not connected. Method:configureTasks()", e);
@@ -143,7 +189,7 @@ public class ChatEngine implements SchedulingConfigurer {
    }
    
    
-   public String chatMessage(String request) throws Exception {
+   public String chatMessage(String request, String userId) throws Exception {
      String response = "";
      if("Hi".equalsIgnoreCase(request) || request.contains("TID")) {
        response = "Welcome to BOT Service. How can i help?\n\n*1.* Account Balance *\u20b9*\n*2.* Account Usage *\u20b9*\n*3.* Agent assistance \n*4.* Exit \n\nPlease type the *option number* to proceed";
@@ -165,14 +211,17 @@ public class ChatEngine implements SchedulingConfigurer {
        } else {
          response = "Usage not available. Please enter valid customer ID: Format(U-XXXX)";
        }
-     } else if ("3".equalsIgnoreCase(request)) {
-       response = "Your statement will get you in email soon!!!";
      } else if("Agent assistance".contains(request) || "assistance".contains(request) || "3".equalsIgnoreCase(request)){
        response = "Please give me your customer ID: Format(C-XXXX)";
      } else if("Exit".contains(request) || "4".equalsIgnoreCase(request)){
        response = "Thank You!!!";
      } else {   
-       response = chatSession.multisentenceRespond(request);
+       Map<String, String> agentAssistance = chatSessionMgt.getAgentAssistance();
+       if(agentAssistance.get(userId) == null || agentAssistance.get(userId).equalsIgnoreCase("false")) {
+         response = chatSession.multisentenceRespond(request);
+       } else {
+         response = "NO";
+       }
      }
      
     return response;

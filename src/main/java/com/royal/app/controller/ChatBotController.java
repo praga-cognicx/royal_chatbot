@@ -1,10 +1,14 @@
 package com.royal.app.controller;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import org.apache.http.HttpRequest;
+import org.apache.http.params.HttpParams;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +21,7 @@ import com.royal.app.message.request.LoginForm;
 import com.royal.app.message.request.SendMessage;
 import com.royal.app.messagerpeople.MessagerPeopleAPISetting;
 @RestController
+@CrossOrigin
 @RequestMapping("/api")
 public class ChatBotController {
   
@@ -47,15 +52,17 @@ public class ChatBotController {
   }
   
   @GetMapping("/chat")
-  public ResponseEntity<Object> getChatDetails(@RequestParam String requestParam) throws Exception {
+  public ResponseEntity<Object> getChatDetails(HttpServletRequest request) throws Exception {
+    String requestParam = request.getQueryString();
     requestParam = "?"+ requestParam + "&apikey=" +messagerPeopleAPISetting.getMessagengerPeopleApikey();
     ResponseEntity<String> entity = restTemplate.getForEntity(messagerPeopleAPISetting.getMessagengerPeopleUrl()+"/chat"+requestParam, String.class);
     return ResponseEntity.ok(entity.getBody());
   }
  
   @GetMapping("/ticket/{id}")
-  public ResponseEntity<Object> getTicketDetails(@PathVariable("id") String id, @RequestParam String requestParam) throws Exception {
-    requestParam = "/"+ (id != null && id != "" ? id: "") + "?" + requestParam + "&apikey="+ messagerPeopleAPISetting.getMessagengerPeopleApikey();
+  public ResponseEntity<Object> getTicketDetails(@PathVariable("id") String id, HttpServletRequest request) throws Exception {
+    String requestParam = request.getQueryString();
+    requestParam = "/"+ (id != null && id != "0" || id != "" ? id: "") + "?" + requestParam + "&apikey="+ messagerPeopleAPISetting.getMessagengerPeopleApikey();
     ResponseEntity<String> entity = restTemplate.getForEntity(messagerPeopleAPISetting.getMessagengerPeopleUrl()+"/ticket"+requestParam, String.class);
     return ResponseEntity.ok(entity.getBody());
   }
